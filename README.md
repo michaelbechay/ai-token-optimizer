@@ -1,105 +1,109 @@
-# 📉 AI Token Optimizer
+📉 AI Token Optimizer Toolkit
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/)
+Une suite d'outils en ligne de commande (CLI) conçue pour le Prompt Engineering et l'optimisation des coûts liés aux LLMs (GPT-4, Claude, Mistral, etc.).
 
-Un outil en ligne de commande (CLI) conçu pour le **Prompt Engineering** et l'optimisation des coûts liés aux LLMs (GPT-4, Claude, etc.).
+Ce dépôt contient deux scripts distincts pour transformer vos fichiers de données (.json) et réduire drastiquement la consommation de tokens :
 
-Ce script prend vos fichiers de données (`.json`) et les transforme en formats densifiés (**YAML Flow Style** ou **JSON Minifié**) afin de réduire drastiquement la consommation de tokens dans vos prompts, sans perdre en lisibilité pour l'IA.
+    token_optimizer.py : Convertit en YAML Flow ou JSON Minifié (Garde la structure, haute compatibilité).
 
-## 💡 Pourquoi cet outil ?
+    json_flattener.py : Convertit en Texte Compact (Supprime la syntaxe, économie maximale).
 
-Les modèles de langage (LLM) facturent au token. La structure JSON standard est verbeuse :
-- Beaucoup de guillemets `"clé": "valeur"`
-- Beaucoup d'accolades `{ }` et de retours à la ligne.
+💡 Pourquoi ces outils ?
 
-**AI Token Optimizer** résout ce problème en convertissant vos données vers le format **YAML Flow**, qui supprime les guillemets superflus et condense la structure.
+Les modèles de langage (LLM) facturent au token. La structure JSON standard est verbeuse (guillemets, accolades, sauts de ligne). Ces scripts nettoient vos données pour ne garder que l'essentiel.
 
-### Exemple de Gain
+Comparatif des Gains
 
-| Format | Contenu | Tokens (est.) |
-| :--- | :--- | :--- |
-| **JSON Standard** | `{"nom": "Alice", "statut": "admin"}` | **11** |
-| **JSON Minifié** | `{"nom":"Alice","statut":"admin"}` | **9** |
-| **YAML Flow (Gagnant)** | `{nom: Alice, statut: admin}` | **7** |
+Pour l'entrée : {"utilisateur": {"nom": "Alice", "id": 101}, "roles": ["admin"]}
+Format	Script	Contenu Résultant	Tokens (est.)
+JSON Standard	(Original)	{"utilisateur": { "nom": ...	~22
+JSON Minifié	token_optimizer.py	{"utilisateur":{"nom":"Alice"...	~18
+YAML Flow	token_optimizer.py	{utilisateur: {nom: Alice...	~14
+Flat Text 🚀	json_flattener.py	utilisateur:nom:Alice, id:101...	~10
 
-> **Résultat :** Sur de gros fichiers, vous pouvez économiser **20% à 40%** de tokens, augmentant ainsi votre fenêtre de contexte disponible et réduisant vos factures.
+    Résultat : Vous pouvez économiser 30% à 50% de tokens sur des gros fichiers de contexte.
 
-## ⚡ Fonctionnalités
+🛠️ Installation
 
-- **Précision Tiktoken** : Utilise l'encodeur officiel d'OpenAI (`cl100k_base`) pour calculer l'économie exacte de tokens avant/après.
-- **Mode YAML Flow** : La compression la plus efficace pour les LLMs modernes.
-- **Mode JSON Minified** : Suppression de tous les espaces blancs inutiles (`whitespace stripping`).
-- **Traitement par Lot** : Fonctionne sur un fichier unique ou scanne un dossier entier.
-- **Support Unicode** : Préserve les accents (é, à, ç) pour éviter l'explosion des tokens due à l'encodage ASCII (`\u00e9`).
-
-## 🛠️ Installation
-
-1. Clonez ce dépôt :
-   ```bash
-   git clone [https://github.com/votre-nom/ai-token-optimizer.git](https://github.com/votre-nom/ai-token-optimizer.git)
-   cd ai-token-optimizer
-
-    Installez les dépendances requises :
+    Clonez ce dépôt :
     Bash
+
+git clone https://github.com/votre-nom/ai-token-optimizer.git
+cd ai-token-optimizer
+
+Installez les dépendances requises :
+Bash
 
     pip install -r requirements.txt
 
-    (Si vous n'avez pas de fichier requirements.txt, installez simplement : pip install pyyaml tiktoken)
+    (Nécessite pyyaml et tiktoken)
 
-🚀 Utilisation
+🚀 Outil 1 : Token Optimizer (Structure Conservée)
 
-1. Optimiser un seul fichier
+Fichier : token_optimizer.py
 
-Affiche les statistiques d'économie sans sauvegarder :
+Utilisez ce script si vous avez besoin que le LLM comprenne parfaitement la structure hiérarchique (objets imbriqués complexes) mais que vous voulez réduire le bruit. Le format YAML est recommandé.
+
+Utilisation
+
 Bash
 
+# 1. Optimiser un fichier (Affiche les stats seulement)
 python token_optimizer.py data/mon_fichier.json
 
-2. Optimiser et Sauvegarder
-
-Génère un fichier optimisé (ex: mon_fichier_opt.yaml) :
-Bash
-
+# 2. Sauvegarder le résultat (Crée un .yaml ou .min.json)
 python token_optimizer.py data/mon_fichier.json --save
 
-3. Choisir le format de sortie
-
-Par défaut, l'outil utilise yaml. Vous pouvez forcer le JSON minifié :
-Bash
-
+# 3. Choisir le format (YAML par défaut, JSON minifié optionnel)
 python token_optimizer.py data/mon_fichier.json --format json --save
 
-4. Traiter tout un dossier
+🚀 Outil 2 : JSON Flattener (Économie Maximale)
 
-Optimise tous les fichiers .json présents dans un répertoire :
+Fichier : json_flattener.py
+
+Utilisez ce script pour injecter de la "Data brute" dans un prompt. Il supprime les { } et les " pour créer une chaîne clé:valeur. Idéal pour donner du contexte (RAG, historique) où la syntaxe stricte importe peu.
+
+Utilisation
+
 Bash
 
-python token_optimizer.py ./mes_donnees --save
+# 1. Aplatir un fichier et voir le gain
+python json_flattener.py data/gros_fichier.json
 
-📊 Exemple de Sortie
+# 2. Sauvegarder le résultat (Crée un fichier .txt)
+python json_flattener.py data/gros_fichier.json --save
 
+Exemple de sortie (Flattener) :
 Plaintext
 
-📄 Traitement de : user_profile.json
-----------------------------------------
-Format Cible   : YAML
-Tokens Avant   : 450
-Tokens Après   : 310
-Économie       : 140 tokens (31.11%)
-Aperçu         : {id: 4821, name: Jean Dupont, roles: [admin, editor], history: {login: 2023-10-01, ...}}
-💾 Sauvegardé sous : user_profile_opt.yaml
+🔧 Aplatissement de : user_data.json
+========================================
+Tokens Original : 450
+Tokens Compacts : 210
+Gain net        : 240 (53.3%)
+Aperçu Résultat : id:4821, name:Jean Dupont, roles:[admin, editor], history:login:2023-10-01
+✅ Fichier généré  : user_data_flat.txt
 
-📦 Dépendances
+⚡ Traitement par dossier
 
-    PyYAML : Pour la génération du format YAML compact.
+Les deux scripts supportent le traitement de masse. Pointez simplement vers un dossier :
+Bash
 
-    tiktoken : Pour le comptage précis des tokens (le même que celui utilisé par OpenAI).
+# Optimise tous les JSON du dossier en YAML
+python token_optimizer.py ./mes_donnees --save
+
+# Aplatit tous les JSON du dossier en Texte
+python json_flattener.py ./mes_donnees --save
+
+📦 Dépendances Techniques
+
+    Tiktoken : Utilisé pour calculer l'économie exacte de tokens (basé sur l'encodeur cl100k_base de GPT-4).
+
+    PyYAML : Pour la génération du format YAML Flow fiable.
 
 🤝 Contribution
 
-Les contributions sont les bienvenues ! Si vous avez des idées pour optimiser encore plus les données (ex: suppression automatique des clés vides), n'hésitez pas à ouvrir une Pull Request.
+Les contributions sont les bienvenues !
 
     Forkez le projet
 
@@ -107,18 +111,8 @@ Les contributions sont les bienvenues ! Si vous avez des idées pour optimiser e
 
     Committez vos changements (git commit -m 'Add some AmazingFeature')
 
-    Pushez vers la branche (git push origin feature/AmazingFeature)
-
     Ouvrez une Pull Request
 
 📄 Licence
 
 Distribué sous la licence MIT. Voir LICENSE pour plus d'informations.
-
-
-### Petite astuce supplémentaire pour toi
-Pour que le README soit complet, n'oublie pas de créer un fichier `requirements.txt` à la racine de ton projet avec ce contenu :
-
-```text
-pyyaml
-tiktoken
